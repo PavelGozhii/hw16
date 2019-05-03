@@ -10,15 +10,15 @@ public class DBConnector {
     private static String password = "root";
 
     public static Connection connect() {
+        Connection connection = null;
         try {
             Class.forName("org.postgresql.Driver");
-            Connection connection = DriverManager.getConnection(url, user, password);
+            connection = DriverManager.getConnection(url, user, password);
             System.out.println("Connection to the PostgreSQL server successfully");
-            return connection;
         } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
-            return null;
+        } finally {
+            return connection;
         }
     }
-
 }
