@@ -23,35 +23,37 @@ public class LoginServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        User user = userDao.selectUser(req.getParameter("login"));
-        RequestDispatcher dispatcher = req.getRequestDispatcher("error.jsp");
+        String login = req.getParameter("login");
+        String password = req.getParameter("password");
+        User user = userDao.selectUser(login);
         if (user == null) {
-            req.setAttribute("error", "UserNotFound");
-        } else if (user != null && user.getRoleId().equals("admin")) {
-            if (req.getParameter("login").equals(user.getLogin())
-                    && req.getParameter("password").equals(user.getPassword())) {
-                req.setAttribute("userList", userDao.selectAllUser());
-                dispatcher = req.getRequestDispatcher("admin/user-list.jsp");
-            } else {
-                req.setAttribute("error", "Incorrect login or password");
-            }
-        } else if (user != null && user.getRoleId().equals("user")) {
-            if (req.getParameter("login").equals(user.getLogin())
-                    && req.getParameter("password").equals(user.getPassword())) {
-                req.setAttribute("login", user.getLogin());
-                dispatcher = req.getRequestDispatcher("UserPage.jsp");
-            } else {
-                req.setAttribute("error", "Incorrect login or password");
+            showErrorPage(req, resp, "UserNotFound");
+        } else if (user.getPassword().equals(password)) {
+            req.getSession().setAttribute("login", login);
+            switch (user.getRoleId()) {
+                case "admin":
+                    resp.sendRedirect("/userList");
+                    break;
+                case "user":
+                    resp.sendRedirect("UserPage.jsp");
+                    break;
+                default:
+                    showErrorPage(req, resp, "Unknown role");
             }
         } else {
-            req.setAttribute("error", "UnknownUserRole");
+            showErrorPage(req, resp, "Incorrect password");
         }
-        dispatcher.forward(req, resp);
-        super.doPost(req, resp);
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         super.doGet(req, resp);
+    }
+
+    private void showErrorPage(HttpServletRequest request, HttpServletResponse response, String error) throws ServletException, IOException {
+        RequestDispatcher dispatcher = request.getRequestDispatcher("error.jsp");
+        request.setAttribute("ref", "index.jsp");
+        request.setAttribute("error", error);
+        dispatcher.forward(request, response);
     }
 }
