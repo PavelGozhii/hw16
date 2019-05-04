@@ -1,6 +1,7 @@
 package servlet;
 
 import dao.UserDao;
+import org.apache.log4j.Logger;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -13,6 +14,7 @@ import java.io.IOException;
 @WebServlet("/userList")
 public class UserListServlet extends HttpServlet {
     private UserDao userDao;
+    private static final Logger logger = Logger.getLogger(UserListServlet.class);
 
     @Override
     public void init() throws ServletException {
@@ -25,6 +27,7 @@ public class UserListServlet extends HttpServlet {
     }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        logger.info("Forward to user-list.jsp");
         request.setAttribute("userList", userDao.selectAllUser());
         RequestDispatcher dispatcher = request.getRequestDispatcher("admin/user-list.jsp");
         dispatcher.forward(request, response);
