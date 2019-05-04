@@ -1,6 +1,7 @@
 package filter;
 
 import model.User;
+import org.apache.log4j.Logger;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -9,12 +10,12 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.annotation.WebFilter;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
 @WebFilter("/admin")
 public class AdminFilter implements Filter {
+    private static final Logger logger = Logger.getLogger(AdminFilter.class);
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -28,6 +29,7 @@ public class AdminFilter implements Filter {
         if (user != null && user.getRoleId().equals("admin")) {
             filterChain.doFilter(servletRequest, servletResponse);
         } else {
+            logger.warn("AccessDenied");
             request.setAttribute("error", "AccessDenied");
             request.getRequestDispatcher("error.jsp").forward(request, servletResponse);
         }
@@ -38,3 +40,4 @@ public class AdminFilter implements Filter {
 
     }
 }
+
