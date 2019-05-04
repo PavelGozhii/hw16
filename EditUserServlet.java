@@ -2,6 +2,7 @@ package servlet;
 
 import dao.UserDao;
 import model.User;
+import org.apache.log4j.Logger;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -13,7 +14,8 @@ import java.io.IOException;
 
 @WebServlet("/edit")
 public class EditUserServlet extends HttpServlet {
-    UserDao userDao;
+    private UserDao userDao;
+    private static final Logger logger = Logger.getLogger(EditUserServlet.class);
 
     @Override
     public void init() throws ServletException {
@@ -26,10 +28,12 @@ public class EditUserServlet extends HttpServlet {
         String login = request.getParameter("login");
         String password = request.getParameter("password");
         String roleId = request.getParameter("roleId");
+        logger.debug("User updating: " + login);
         User user = new User(login, password, roleId);
         userDao.updateUser(user, lastLogin);
         RequestDispatcher dispatcher = request.getRequestDispatcher("admin/user-list.jsp");
         request.setAttribute("userList", userDao.selectAllUser());
+        logger.info("Forward to UserList.jsp");
         dispatcher.forward(request, response);
     }
 
@@ -38,6 +42,7 @@ public class EditUserServlet extends HttpServlet {
         User user = userDao.selectUser(login);
         request.setAttribute("user", user);
         RequestDispatcher dispatcher = request.getRequestDispatcher("admin/user-form.jsp");
+        logger.info("Forward to UserForm.jsp");
         dispatcher.forward(request, response);
 
     }
