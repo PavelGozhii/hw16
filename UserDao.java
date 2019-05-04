@@ -1,7 +1,7 @@
-
 package dao;
 
 import model.User;
+import org.apache.log4j.Logger;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -11,33 +11,29 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserDao {
-    private static String url = "jdbc:postgresql://localhost:5432/hw14";
-    private static String user = "postgres";
-    private static String password = "root";
-
     private static final String INSERT_USER_SQL = "INSERT INTO users (login, password, roleId) VALUES (?, ?, ?);";
-    private static final String SELECT_USER_BY_LOGIN = "SELECT * FROM USERS WHERE  login = ?;";
-    private static final String SELECT_ALL_USERS = "SELECT * FROM USERS";
-    private static final String DELETE_USERS_SQL = "DELETE FROM USERS WHERE login = ?;";
-    private static final String UPDATE_USERS_SQL = "UPDATE USERS SET login = ?, password = ?, roleId = ? WHERE login = ?;";
+    private static final String SELECT_USER_BY_LOGIN = "SELECT * FROM users WHERE  login = ?;";
+    private static final String SELECT_ALL_USERS = "SELECT * FROM users";
+    private static final String DELETE_USERS_SQL = "DELETE FROM users WHERE login = ?;";
+    private static final String UPDATE_USERS_SQL = "UPDATE users SET login = ?, password = ?, roleId = ? WHERE login = ?;";
+    private static final Logger logger = Logger.getLogger(UserDao.class);
 
     public UserDao() {
     }
 
     public boolean insertUser(User user) {
-        boolean isInsert = false;
         try (Connection connection = DBConnector.connect()) {
             PreparedStatement preparedStatement = connection.prepareStatement(INSERT_USER_SQL);
             preparedStatement.setString(1, user.getLogin());
             preparedStatement.setString(2, user.getPassword());
             preparedStatement.setString(3, user.getRoleId());
-            System.out.println(preparedStatement);
+            logger.info(preparedStatement);
             preparedStatement.executeUpdate();
-            isInsert = true;
+            return true;
         } catch (SQLException e) {
+            logger.warn("InsertUserException", e);
             e.printStackTrace();
-        } finally {
-            return isInsert;
+            return false;
         }
     }
 
@@ -46,7 +42,7 @@ public class UserDao {
         try (Connection connection = DBConnector.connect()) {
             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_USER_BY_LOGIN);
             preparedStatement.setString(1, login);
-            System.out.println(preparedStatement);
+            logger.info(preparedStatement);
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 String loginUser = resultSet.getString("login");
@@ -57,6 +53,7 @@ public class UserDao {
             connection.close();
             preparedStatement.close();
         } catch (SQLException e) {
+            logger.warn("SelectUserException", e);
             e.printStackTrace();
         }
         return user;
@@ -66,7 +63,7 @@ public class UserDao {
         List<User> users = new ArrayList<User>();
         try (Connection connection = DBConnector.connect()) {
             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_ALL_USERS);
-            System.out.println(preparedStatement);
+            logger.info(preparedStatement);
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 String loginUser = resultSet.getString("login");
@@ -77,6 +74,7 @@ public class UserDao {
             connection.close();
             preparedStatement.close();
         } catch (SQLException e) {
+            logger.warn("SelectAllUserException", e);
             e.printStackTrace();
         }
         return users;
@@ -92,6 +90,7 @@ public class UserDao {
             connection.close();
             preparedStatement.close();
         } catch (SQLException e) {
+            logger.warn("DeleteUserException", e);
             e.printStackTrace();
         }
         return rowDeleted;
@@ -105,12 +104,12 @@ public class UserDao {
             preparedStatement.setString(2, user.getPassword());
             preparedStatement.setString(3, user.getRoleId());
             preparedStatement.setString(4, login);
-            System.out.println(preparedStatement);
+            logger.info(preparedStatement);
             rowUpdated = preparedStatement.executeUpdate() > 0;
             connection.close();
             preparedStatement.close();
-        } catch (
-                SQLException e) {
+        } catch (SQLException e) {
+            logger.warn("UpdateUserException", e);
             e.printStackTrace();
         }
         return rowUpdated;
@@ -125,4 +124,5 @@ public class UserDao {
     }
 
 }
+
 
