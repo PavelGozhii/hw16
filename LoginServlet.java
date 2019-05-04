@@ -2,6 +2,7 @@ package servlet;
 
 import dao.UserDao;
 import model.User;
+import org.apache.log4j.Logger;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -13,7 +14,8 @@ import java.io.IOException;
 
 @WebServlet("/login")
 public class LoginServlet extends HttpServlet {
-    UserDao userDao;
+    private UserDao userDao;
+    private final static Logger logger = Logger.getLogger(LoginServlet.class);
 
     @Override
     public void init() throws ServletException {
@@ -25,10 +27,13 @@ public class LoginServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String login = req.getParameter("login");
         String password = req.getParameter("password");
+        logger.debug("Login user: " + login);
         User user = userDao.selectUser(login);
         if (user == null) {
+            logger.warn("UserNotFound");
             showErrorPage(req, resp, "UserNotFound");
         } else if (user.getPassword().equals(password)) {
+            logger.debug("UserFound");
             req.getSession().setAttribute("login", login);
             switch (user.getRoleId()) {
                 case "admin":
@@ -38,9 +43,11 @@ public class LoginServlet extends HttpServlet {
                     resp.sendRedirect("UserPage.jsp");
                     break;
                 default:
+                    logger.warn("Unknown role");
                     showErrorPage(req, resp, "Unknown role");
             }
         } else {
+            logger.debug("Incorrect password");
             showErrorPage(req, resp, "Incorrect password");
         }
     }
